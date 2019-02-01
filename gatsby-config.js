@@ -1,37 +1,44 @@
-const path = require(`path`)
+const path = require(`path`);
 
-const config = require(`./src/utils/siteConfig`)
-const generateRSSFeed = require(`./src/utils/rss/generate-feed`)
+const config = require(`./src/utils/siteConfig`);
+const generateRSSFeed = require(`./src/utils/rss/generate-feed`);
 
-let ghostConfig
+require("dotenv").config({
+    path: `.env.${process.env.NODE_ENV}`
+});
 
-try {
-    ghostConfig = require(`./.ghost`)
-} catch (e) {
-    ghostConfig = {
-        production: {
-            apiUrl: process.env.GHOST_API_URL,
-            contentApiKey: process.env.GHOST_CONTENT_API_KEY,
-        },
+const ghostConfig = {
+    development: {
+        apiUrl: process.env.GHOST_API_URL,
+        contentApiKey: process.env.GHOST_CONTENT_API_KEY
+    },
+    production: {
+        apiUrl: process.env.GHOST_API_URL,
+        contentApiKey: process.env.GHOST_CONTENT_API_KEY
     }
-} finally {
-    const { apiUrl, contentApiKey } = process.env.NODE_ENV === `development` ? ghostConfig.development : ghostConfig.production
+};
 
-    if (!apiUrl || !contentApiKey || contentApiKey.match(/<key>/)) {
-        throw new Error(`GHOST_API_URL and GHOST_CONTENT_API_KEY are required to build. Check the README.`) // eslint-disable-line
-    }
+const { apiUrl, contentApiKey } =
+    process.env.NODE_ENV === `development`
+        ? ghostConfig.development
+        : ghostConfig.production;
+
+if (!apiUrl || !contentApiKey || contentApiKey.match(/<key>/)) {
+    throw new Error(
+        `GHOST_API_URL and GHOST_CONTENT_API_KEY are required to build. Check the README.`
+    ); // eslint-disable-line
 }
 
 /**
-* This is the place where you can tell Gatsby which plugins to use
-* and set them up the way you want.
-*
-* Further info 👉🏼 https://www.gatsbyjs.org/docs/gatsby-config/
-*
-*/
+ * This is the place where you can tell Gatsby which plugins to use
+ * and set them up the way you want.
+ *
+ * Further info 👉🏼 https://www.gatsbyjs.org/docs/gatsby-config/
+ *
+ */
 module.exports = {
     siteMetadata: {
-        siteUrl: config.siteUrl,
+        siteUrl: config.siteUrl
     },
     pathPrefix: `/blog`,
     plugins: [
@@ -42,8 +49,8 @@ module.exports = {
             resolve: `gatsby-source-filesystem`,
             options: {
                 path: path.join(__dirname, `src`, `pages`),
-                name: `pages`,
-            },
+                name: `pages`
+            }
         },
         // Setup for optimised images.
         // See https://www.gatsbyjs.org/packages/gatsby-image/
@@ -51,8 +58,8 @@ module.exports = {
             resolve: `gatsby-source-filesystem`,
             options: {
                 path: path.join(__dirname, `src`, `images`),
-                name: `images`,
-            },
+                name: `images`
+            }
         },
         `gatsby-plugin-sharp`,
         `gatsby-transformer-sharp`,
@@ -61,7 +68,7 @@ module.exports = {
             options:
                 process.env.NODE_ENV === `development`
                     ? ghostConfig.development
-                    : ghostConfig.production,
+                    : ghostConfig.production
         },
         /**
          *  Utility Plugins
@@ -86,8 +93,8 @@ module.exports = {
                         }
                     }
                 }
-              `,
-            },
+              `
+            }
         },
         {
             resolve: `gatsby-plugin-feed`,
@@ -104,14 +111,12 @@ module.exports = {
                     }
                 }
               `,
-                feeds: [
-                    generateRSSFeed(config),
-                ],
-            },
+                feeds: [generateRSSFeed(config)]
+            }
         },
         `gatsby-plugin-sitemap`,
         `gatsby-plugin-react-helmet`,
         `gatsby-plugin-force-trailing-slashes`,
-        `gatsby-plugin-offline`,
-    ],
-}
+        `gatsby-plugin-offline`
+    ]
+};
